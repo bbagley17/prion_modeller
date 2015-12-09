@@ -1,0 +1,213 @@
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+#include <cstring>
+
+using namespace std;
+
+double k[3];
+static double soln[3][1000];
+
+void ECMupdate(double& ECMprionCount, int tanknumber)
+{
+	//constant to be determined
+	double k1;
+	double k2;
+
+	//updates prion flow in and out of cells, cell by cell
+	for (int n = 0;n < tanknumber;)
+	{
+		//Need to fix these equations. I goofed. 
+		ECMprionCount = ECMprionCount + k1*soln[1][n];
+		soln[1][n] = soln[1][n] + k2*ECMprionCount;
+	}
+
+}
+
+void evalF(double y[], double dt)
+{
+	double k[3];
+	k[0] = dt*(3 * y[0] + 5 * y[1]);
+	k[1] = dt*(3 * y[1] + 5 * y[2]);
+	k[2] = dt*(3 * y[0] + 5 * y[2]);
+}
+
+void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter)
+{
+	int o = sizeof(init) / sizeof(*init); // Determine vertical length of initial conditions (# of ODEs to solve)
+	double k1[1000], k2[1000], k3[1000], k4[1000];
+	double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
+	double soln[numIter][2][1000]; // Initialize solution matrix
+	double inter[1000]; // Declare temporary array used for calclulating various k's.
+	for (int d = 0; d < o; d++)
+		soln[numIter][d][0] = init[d]; // Load initial conditions into solution matrix
+
+	for (int i = 0; i < numIter; i++) { // Runga kutta doing its magic. I've checked its output with some matlab code I found and it's working perfectly.
+		for (int j = 0; j < 3; j++)
+			inter[j] = soln[j][i];
+		evalF(inter, dt);
+		for (int m = 0; m < o; m++)
+			k1[m] = k[m];
+		for (int j = 0; j < o; j++)
+			inter[j] = soln[j][i];
+		for (int l = 0; l < o; l++)
+			inter[l] += .5*k1[l];
+		evalF(inter, dt);
+		for (int m = 0; m < o; m++)
+			k2[m] = k[m];
+		for (int j = 0; j < o; j++)
+			inter[j] = soln[j][i];
+		for (int l = 0; l < o; l++)
+			inter[l] += .5*k2[l];
+		evalF(inter, dt);
+		for (int m = 0; m < o; m++)
+			k3[m] = k[m];
+		for (int j = 0; j < o; j++)
+			inter[j] = soln[j][i];
+		for (int l = 0; l < o; l++)
+			inter[l] += k3[l];
+		evalF(inter, dt);
+		for (int m = 0; m < o; m++)
+			k4[m] = k[m];
+		for (int j = 0; j < o; j++)
+			soln[j][i + 1] = soln[j][i] + (k1[j] + 2 * k2[j] + 2 * k3[j] + k4[j]) / 6;
+	}
+	//Could you add some loop that will output all the prion counts?
+}
+
+int main()
+{
+	int tanknumber;
+	cout << "Please enter the number of tanks used in this problem: ";
+	cin >> tanknumber;
+	cout << endl;
+	int stoptime;
+	cout << "Please enter the number of (insert time unit) you would like to simulate: ";
+	cin >> stoptime;
+	cout << endl;
+
+	//creating class for cells.
+	class Cell
+	{
+		//Number of prions (diseased proteins) in each cell.
+		double prionCount;
+
+		//Number of healthy proteins in each cell.
+		double proteinCount;
+
+		//Rate at which cells excrete prions. Dependent of prion concentration.
+		double prionOutput;
+
+		//Rate at which cells uptake prions from extracellular medium. Dependent on extracellular prion concentration.
+		double prionInput;
+
+		//Volume of cell (NOTE: volume is in liters)
+		double volume;
+
+		//Production of new, healthy proteins in a timestep, which may then be added to proteinCount before the next timestep.
+		//The basic idea is that cells will try to maintain the initial number of proteins for standard function, so we just 
+		//add enough to get the healthy count back up to 2,000,000 healthy proteins of the relelvant type.
+		//For initial version, this variable will not be used, as we're just going to update the healthy protein count back to 2mil 
+		//every timestep.
+		//double newproteinCount
+
+	public:
+		Cell(double prionCount, double proteinCount, double prionOutput, double prionInput, double volume) :
+			prionCount(prionCount),
+			proteinCount(proteinCount),
+			prionOutput(prionOutput),
+			prionInput(prionInput),
+			volume(volume)
+		{}
+	};
+
+	//Creating class for extracellular medium.
+	class ECM
+	{
+		double ECMprionCount;
+		double ECMvolume;
+	};
+
+
+	//Creating time values
+	const double timeStart = 0;
+	static double timeStop = 0;
+	int timeStep;
+
+	cout << "Please enter the stop time for the simulation (in [unit to be determined]):";
+	cin >> timeStop;
+	cout << endl << "Please enter the timestep (in [insert units]):";
+	cin >> timeStep;
+	cout << endl;
+
+
+	//Loops to create cells
+	int cellnumber;
+	string num;
+	string cellname;
+	Cell cell1(1, 2000000, 0, 0, 0.000000000002);
+	for (cellnumber = 2; cellnumber < tanknumber; cellnumber++)
+		{
+			//Something to concatinate "cell" with the value of cellnumber
+			cellname = "cell" + std::toString(cellnumber);
+			Cell cellname(0.0, 2000000.0, 0.0, 0.0, 0.000000000002);
+		}
+	//And now we've made all the cells.
+	//Let's make the extracellular medium.
+	double ECMvolume;
+	ECMvolume = tanknumber * 200000;//Ask Dr. Sardinia for a good ratio between the number of neurons in a cell population and the volume of the ECM containing them
+
+	ECM ECM1(0, ECMvolume);
+
+
+	//Establishing variable arrays based on number of tanks input by user. Using arrays makes it scalable (obviously),
+	// and should help simplify our later code.
+
+	//Concentration of diseased proteins (prions) in each cell, and in the local extracellular medium. Last value is for ECM.
+	static double prionCount[1000];
+	//Concentration of healthy proteins in each cell.
+	static double healthyProteinCount[1000];
+	//Rate at which cells excrete prions, either through tubules to adjacent cells of via dispersal of vesicles into ECM.
+	static double prionOutput[1000];
+	//Rate at which cells uptake secreted prions.
+	static double prionInput[1000];
+
+	//
+	//
+	//Rate at which cells produce healthy proteins. Not used in current version
+	//double proteinSynthesisRate[tanknumber];
+
+	//The last value for prionConc will be the concentration in the medium via which material spreads from "tank" to "tank".
+
+	//Current data on the subject is actually rather curious, in that entire cell cultures die en-masse almost simultaneously even though prion toxicity
+	// is time dependent. This suggests the prion spread may occur immensely rapidly. 
+
+	//Setting arrays based on cell object data
+	string cellSelect;
+	for (int n = 1; n < tanknumber;n++)
+	{
+		cellSelect = "cell" + n;
+		prionCount[n-1] = cellSelect.prionCount;
+		healthyProteinCount[n] = cellSelect.proteinCount;
+
+	}
+
+	soln[2][1000] = { (prionCount), (healthyProteinCount)};
+
+	//Loops which call relevent functions to update all arrays, cycling through the values of each array cell by cell.
+	for (double time = 0; time <= timeStop;time + timeStep)
+	{
+		for (int n = 0; n < tanknumber; n++)
+		{
+			rungeK(soln, timeStart, timeStop, timeStep);
+		}
+		//Something to add all exported prions to the concentration in the extracellular medium, and subtract all prions cells have uptaken
+		ECMupdate(ECM1.ECMprionCount, tanknumber);
+
+		for (int n = 0;n < tanknumber;n++)
+		{
+			cellSelect = "cell" + n;
+			cellSelect.proteinCount = 2000000;
+		}
+	}
+}
