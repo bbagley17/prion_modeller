@@ -8,7 +8,7 @@ using namespace std;
 double k[3];
 static double soln[1000][1000];
 
-void ECMupdate(double& ECMprionCount, int tanknumber)
+void ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, double ECMvolume)
 {
 	//constant to be determined
 	double k1;
@@ -19,27 +19,29 @@ void ECMupdate(double& ECMprionCount, int tanknumber)
 	for (int n = 0;n < tanknumber;)
 	{
 		//Need to fix these equations. I goofed. 
-		tempECMprionCount = ECMprionCount/ECMvolume;
-		ECMprionCount = ECMprionCount + k1*((soln[1][n]/cellVolume)-(ECMprionCount/ECMvolume);
-		soln[1][n] = soln[1][n] + k2*((tempECMprionCount/ECMvolume) - (soln[1][n]/cellVolume);
+		tempECMprionConc = ECMprionCount / ECMvolume;
+		ECMprionCount = ECMprionCount + k1*((soln[1][n] / cellVolume) - (ECMprionCount / ECMvolume));
+		soln[1][n] = soln[1][n] + k2*(tempECMprionConc - (soln[1][n] / cellVolume));
 	}
 
 }
 
-void evalF(double y[], double dt)
+void evalF(double y[], double dt, double cellVolume, double ECMvolume)
 {
 	double k[3];
-	k[0] = dt*(3 * y[0] + 5 * y[1]); // Add ODEs here
-	k[1] = dt*(3 * y[1] + 5 * y[2]);
-	k[2] = dt*(3 * y[0] + 5 * y[2]);
+	//Stat mech constant that still needs defining
+	double c1;
+	k[0] = dt*(c1 * y[0] * y[1]/(cellVolume*cellVolume)); // Add ODEs here
+	//k[1] = dt*(3 * y[1] + 5 * y[2]);
+	//k[2] = dt*(3 * y[0] + 5 * y[2]);
 }
 
-void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter)
+void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter, const double cellVolume, const double ECMvolume)
 {
 	int o = sizeof(init) / sizeof(*init); // Determine vertical length of initial conditions (# of ODEs to solve)
 	double k1[1000], k2[1000], k3[1000], k4[1000];
 	double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
-	//double soln[1000][1000]; // Initialize solution matrix
+										 //double soln[1000][1000]; // Initialize solution matrix
 	double inter[1000]; // Declare temporary array used for calclulating various k's.
 	for (int d = 0; d < o; d++)
 		soln[d][0] = init[0][d]; // Load initial conditions into solution matrix
@@ -47,28 +49,28 @@ void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter)
 	for (int i = 0; i < numIter; i++) { // Runga kutta doing its magic. I've checked its output with some matlab code I found and it's working perfectly.
 		for (int j = 0; j < 3; j++)
 			inter[j] = soln[j][i];
-		evalF(inter, dt);
+		evalF(inter, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k1[m] = k[m];
 		for (int j = 0; j < o; j++)
 			inter[j] = soln[j][i];
 		for (int l = 0; l < o; l++)
 			inter[l] += .5*k1[l];
-		evalF(inter, dt);
+		evalF(inter, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k2[m] = k[m];
 		for (int j = 0; j < o; j++)
 			inter[j] = soln[j][i];
 		for (int l = 0; l < o; l++)
 			inter[l] += .5*k2[l];
-		evalF(inter, dt);
+		evalF(inter, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k3[m] = k[m];
 		for (int j = 0; j < o; j++)
 			inter[j] = soln[j][i];
 		for (int l = 0; l < o; l++)
 			inter[l] += k3[l];
-		evalF(inter, dt);
+		evalF(inter, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k4[m] = k[m];
 		for (int j = 0; j < o; j++)
@@ -76,11 +78,11 @@ void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter)
 	}
 	//Could you add some loop that will output all the prion counts? Answer: yes!
 	for (int i = 0; i < o; i++)
-		{
-			for (int j = 0; j <= numIter; j++_)
-				cout << soln[j][i] << " ";
-			cout << endl;
-		}
+	{
+		for (int j = 0; j <= numIter; j++)
+			cout << soln[j][i] << " ";
+		cout << endl;
+	}
 }
 
 int main()
@@ -93,6 +95,9 @@ int main()
 	cout << "Please enter the number of (insert time unit) you would like to simulate: ";
 	cin >> stoptime;
 	cout << endl;
+
+	//Volume of cell (NOTE: volume is in liters)
+	double cellVolume;
 
 	//creating class for cells.
 	class Cell
@@ -109,8 +114,6 @@ int main()
 		//Rate at which cells uptake prions from extracellular medium. Dependent on extracellular prion concentration.
 		double prionInput;
 
-		//Volume of cell (NOTE: volume is in liters)
-		double volume;
 
 		//Production of new, healthy proteins in a timestep, which may then be added to proteinCount before the next timestep.
 		//The basic idea is that cells will try to maintain the initial number of proteins for standard function, so we just 
@@ -124,17 +127,17 @@ int main()
 			prionCount(prionCount),
 			proteinCount(proteinCount),
 			prionOutput(prionOutput),
-			prionInput(prionInput),
-			volume(volume)
+			prionInput(prionInput)
 		{}
-	};
+	}
 
-	//Creating class for extracellular medium.
-	class ECM
-	{
-		double ECMprionCount;
-		double ECMvolume;
-	};
+
+	//Creating extracellular medium.
+
+		double ECMprionCount = 0;
+	//Still need to estimate this
+		double ECMvolume = ;
+
 
 
 	//Creating time values
@@ -165,7 +168,7 @@ int main()
 	double ECMvolume;
 	ECMvolume = tanknumber * 200000;//Ask Dr. Sardinia for a good ratio between the number of neurons in a cell population and the volume of the ECM containing them
 
-	ECM ECM1(0, ECMvolume);
+
 
 
 	//Establishing variable arrays based on number of tanks input by user. Using arrays makes it scalable (obviously),
@@ -195,22 +198,21 @@ int main()
 	for (int n = 1; n < tanknumber;n++)
 	{
 		cellSelect = "cell" + n;
-		prionCount[n - 1] = cellSelect.prionCount;
-		healthyProteinCount[n] = cellSelect.proteinCount;
+		soln[1][n-1] = { cellSelect.prionCount};
+		soln[2][n - 1] = { cellSelect.proteinCount };
 
 	}
 
-	soln[2][1000] = { (prionCount), (healthyProteinCount) };
 
 	//Loops which call relevent functions to update all arrays, cycling through the values of each array cell by cell.
 	for (double time = 0; time <= timeStop;time + timeStep)
 	{
 		for (int n = 0; n < tanknumber; n++)
 		{
-			rungeK(soln, timeStart, timeStop, timeStep);
+			rungeK(soln, timeStart, timeStop, timeStep, cellVolume, ECMvolume);
 		}
 		//Something to add all exported prions to the concentration in the extracellular medium, and subtract all prions cells have uptaken
-		ECMupdate(ECM1.ECMprionCount, tanknumber);
+		ECMupdate(ECM1.ECMprionCount, tanknumber, cellVolume, ECMvolume);
 
 		for (int n = 0;n < tanknumber;n++)
 		{
