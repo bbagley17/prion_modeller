@@ -11,15 +11,17 @@ static double soln[1000][1000];
 void ECMupdate(double& ECMprionCount, int tanknumber)
 {
 	//constant to be determined
-	double c1; // **These conflicted with other variables when they were k1,k2, so I changed them to c1,c2.
-	double c2;
-
+	double k1;
+	double k2;
+	//temp value for Prion concentration outside cell
+	double tempECMprionConc;
 	//updates prion flow in and out of cells, cell by cell
 	for (int n = 0;n < tanknumber;)
 	{
 		//Need to fix these equations. I goofed. 
-		ECMprionCount = ECMprionCount + c1*soln[1][n];
-		soln[1][n] = soln[1][n] + c2*ECMprionCount;
+		tempECMprionCount = ECMprionCount/ECMvolume;
+		ECMprionCount = ECMprionCount + k1*((soln[1][n]/cellVolume)-(ECMprionCount/ECMvolume);
+		soln[1][n] = soln[1][n] + k2*((tempECMprionCount/ECMvolume) - (soln[1][n]/cellVolume);
 	}
 
 }
