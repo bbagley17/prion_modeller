@@ -38,7 +38,7 @@ void evalF(double y[], double dt, double cellVolume, double ECMvolume)
 
 void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter, const double cellVolume, const double ECMvolume)
 {
-	int o = sizeof(init) / sizeof(*init); // Determine vertical length of initial conditions (# of ODEs to solve)
+	int o = (sizeof(init) / sizeof(*init)) - 1; // Determine vertical length of initial conditions (# of ODEs to solve)
 	double k1[1000], k2[1000], k3[1000], k4[1000];
 	double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
 										 //double soln[1000][1000]; // Initialize solution matrix
@@ -47,7 +47,7 @@ void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter, c
 		soln[d][0] = init[0][d]; // Load initial conditions into solution matrix
 
 	for (int i = 0; i < numIter; i++) { // Runga kutta doing its magic. I've checked its output with some matlab code I found and it's working perfectly.
-		for (int j = 0; j < 3; j++)
+		for (int j = 0; j < o; j++)
 			inter[j] = soln[j][i];
 		evalF(inter, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
