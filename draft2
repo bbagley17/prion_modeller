@@ -16,7 +16,7 @@ void ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, double 
 	//temp value for Prion concentration outside cell
 	double tempECMprionConc;
 	//updates prion flow in and out of cells, cell by cell
-	for (int n = 0; n < tanknumber;)
+	for (int n = 0; n < tanknumber; n++)
 	{
 		//Need to fix these equations. I goofed. 
 		tempECMprionConc = ECMprionCount / ECMvolume;
@@ -31,15 +31,14 @@ void ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, double 
 
 void evalF(double y[], double dt, double cellVolume, double ECMvolume)
 {
-	double k[3];
 	//Stat mech constant that still needs defining
-	double c1 =2;
+	double c1 = 2;
 	k[0] = dt*(c1 * y[0] * y[1] / (cellVolume*cellVolume)); // Add ODEs here
 															//k[1] = dt*(3 * y[1] + 5 * y[2]);
 															//k[2] = dt*(3 * y[0] + 5 * y[2]);
 }
 
-void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter, double cellVolume, 
+void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter, double cellVolume,
 	double ECMvolume, double ECMprionCount, int tanknumber)
 {
 	int o = 2; // Determine vertical length of initial conditions (# of ODEs to solve)
@@ -49,7 +48,7 @@ void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter, d
 	double inter[1000]; // Declare temporary array used for calclulating various k's.
 	for (int d = 0; d < o; d++)
 	{
-		for (int q = 0;q < 1000;q++)
+		for (int q = 0; q < 1000; q++)
 		{
 			soln[d][0] = init[d][q]; // Load initial conditions into solution matrix
 		}
@@ -171,15 +170,13 @@ int main()
 	//Let's make the extracellular medium.
 	double ECMprionCount = 0;
 	//Still need to estimate this:
-	double ECMvolume = tanknumber*cellVolume * 2;//Ask Dr. Sardinia for a good ratio between the number of neurons in a cell population and the volume of the ECM containing them
+	double ECMvolume = tanknumber*cellVolume * 0.55;//Estimated ratio of ECM volume to cell volume provided by Dr. M. Sardinia
+	
 
+	//Establishing variable arrays based on number of tanks input by user. Using arrays makes it scalable (obviously),
+	// and should help simplify our later code
 
-
-
-												 //Establishing variable arrays based on number of tanks input by user. Using arrays makes it scalable (obviously),
-												 // and should help simplify our later code
-
-												 //Concentration of diseased proteins (prions) in each cell, and in the local extracellular medium. Last value is for ECM.
+	//Concentration of diseased proteins (prions) in each cell, and in the local extracellular medium. Last value is for ECM.
 	static double prionCount[1000];
 
 	prionCount[0] = 1;
@@ -216,10 +213,8 @@ int main()
 
 	for (int n = 0; n < tanknumber; n++)
 	{
-
 		init[0][n] = prionCount[n];
 		init[1][n] = healthyProteinCount[n];
-
 	}
 
 
