@@ -1,18 +1,3 @@
-//Prion Spread Simulator v1
-//Bagley, B. ; Ender, L. ;
-//
-//This simulation is intended to model prion pathogenesis in a neuron population. Prions infect healthy proteins within
-// a cell (converting said proteins into prions), and prions will additionally be exported and imported between each 
-//cell and the extracellular medium (ECM). 
-//
-//This is a prototype with numerous approximations made for the sake of time and computational requirements.
-//Later versions will replace these approximations with more precisely calculated values.
-//Additional future features include factoring in potential transmission via tubules between adjacent neurons
-//with the eventual goal of theoretically predicting which mechanism (vesicle excretion or spread via tubules)
-//predominates in prion spread.
-//
-//
-
 #include <iostream>
 #include <iomanip>
 #include <ctime>
@@ -34,10 +19,10 @@ double ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, doubl
 	for (int n = 0; n < tanknumber; n++)
 	{
 		//The if statements are intended to prevent division by zero and other physically inaccurate operations
-		if (ECMprionCount > (10*tanknumber))
+		if (ECMprionCount >(10 * tanknumber))
 		{
 			tempECMprionConc = ECMprionCount / ECMvolume;
-			if(storedCounts[0][n]>1000)
+			if (storedCounts[0][n]>1000)
 				ECMprionCount = ECMprionCount + k1*((storedCounts[0][n] / cellVolume) - tempECMprionConc);
 			storedCounts[0][n] = storedCounts[0][n] + k2*(tempECMprionConc - (storedCounts[0][n] / cellVolume));
 		}
@@ -45,7 +30,7 @@ double ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, doubl
 		// calculation for this factor.
 		storedCounts[1][n] = 2000000;
 	}
-	return storedCounts[1000][1000];
+	return storedCounts;
 }
 
 void evalF(double y[], double dt, double cellVolume, double ECMvolume)
@@ -66,7 +51,7 @@ void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter, d
 	double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
 										 //double soln[1000][1000]; // Initialize solution matrix
 	double inter[1000]; // Declare temporary array used for calclulating various k's.
-for (int d = 0; d < numIter; d++)
+	for (int d = 0; d < numIter; d++)
 	{
 		soln[d][0] = init[0][d]; // Load initial conditions into solution matrix
 	}
@@ -104,14 +89,15 @@ for (int d = 0; d < numIter; d++)
 
 		//Something to set the first row of storedCounts as the latest column of the soln matrix
 		for (int j = 0; j < tanknumber; j++)
-		storedCounts[0][j] = soln[j][numIter+1];
+			storedCounts[0][j] = soln[j][numIter + 1];
 	}
 	//Outputting data
 	for (int i = 0; i < tanknumber; i++)
 	{
+		cout << "Evolution of Tank " << i+1 << ":";
 		for (int j = 0; j <= numIter; j++)
 		{
-			cout << soln[0][i] << " ";
+			cout << soln[i][j] << " " << endl;
 		}
 		cout << endl << endl;
 	}
@@ -248,15 +234,32 @@ int main()
 		cout << endl;
 	}
 
-	int keepgoing;
+	int keepgoing = 0;
 	cout << "Please take this opportunity to review the initial values. Enter 1 to continue the simulation:";
 	cin >> keepgoing;
 	cout << endl;
 
-	if (keepgoing =1)
+	for (int q = 0; q < 2; q++)
+	{
+		for (int n = 0; n < tanknumber; n++)
+		{
+			storedCounts[q][n] = init[q][n];
+		}
+		cout << endl;
+	}
+
+	if (keepgoing == 1)
 		rungeK(init, timeStart, timeStop, numIter, cellVolume, ECMvolume, ECMprionCount, tanknumber);
 
 
-	return 0;
+	keepgoing = 0;
 
+	cout << "Please review the final values:";
+	cout << endl << "Please enter 1 to end the simulation:";
+	cin >> keepgoing;
+
+
+	if (keepgoing == 1)
+		return 0;
+	
 }
