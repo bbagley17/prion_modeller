@@ -24,13 +24,13 @@ long double k[1000];
 static  long double soln[2][10000][10000];
 static int i;
 
-void ECMupdate( long double& ECMprionCount, int tanknumber,  long double cellVolume,  long double ECMvolume)
+void ECMupdate(long double& ECMprionCount, int tanknumber, long double cellVolume, long double ECMvolume)
 {
 	//constants to be determined
-	 double k1 = 2;
-	 double k2 = 2;
+	double k1 = 2;
+	double k2 = 2;
 	//temporary value for Prion concentration outside cell
-	 long double tempECMprionConc;
+	long double tempECMprionConc;
 	//updates prion flow in and out of cells, cell by cell
 	for (int n = 0; n < tanknumber; n++)
 	{
@@ -38,11 +38,11 @@ void ECMupdate( long double& ECMprionCount, int tanknumber,  long double cellVol
 		if (soln[0][n][i]>1000)
 			ECMprionCount = ECMprionCount + k1*((soln[0][n][i] / cellVolume) - tempECMprionConc);
 		//The if statements are intended to prevent division by zero and other physically inaccurate operations
-		if (ECMprionCount > (10*tanknumber))
+		if (ECMprionCount > (10 * tanknumber))
 			soln[0][n][i] = soln[0][n][i] + k2*(tempECMprionConc - (soln[0][n][i] / cellVolume));
 		//Accounting for synthesis of new proteins back to normal levels. Later versions will feature more precise
 		// calculation for this factor.
-		soln[1][n][i+1] = 2000000;
+		soln[1][n][i + 1] = 2000000;
 	}
 }
 
@@ -57,11 +57,10 @@ void evalF(long double y1[], long double y2[], int o, double dt, long double cel
 void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVolume,
 	long double ECMvolume, long double ECMprionCount, int tanknumber)
 {
-	double soln[2][1000][1000];
 	int o = tanknumber; // Determine vertical length of initial conditions (# of ODEs to solve)
 	long double k1[1000], k2[1000], k3[1000], k4[1000];
 	long double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
-										 //double soln[1000][1000]; // Initialize solution matrix
+											  //double soln[1000][1000]; // Initialize solution matrix
 	long double inter1[1000];
 	long double inter2[1000];   // Declare temporary array used for calclulating various k's.
 
@@ -131,7 +130,7 @@ int main()
 	cout << endl;
 
 	//Volume of cell (NOTE: volume is in liters)
-	 long double cellVolume = 0.000000000002;
+	long double cellVolume = 0.000000000002;
 
 
 	//Creating time values
@@ -146,12 +145,12 @@ int main()
 	cout << endl;
 
 	//Let's make the extracellular medium.
-	 long double ECMprionCount = 0;
-	 long double ECMvolume = tanknumber*cellVolume * 0.55;//Estimated ratio of ECM volume to cell volume provided by Dr. M. Sardinia
+	long double ECMprionCount = 0;
+	long double ECMvolume = tanknumber*cellVolume * 0.55;//Estimated ratio of ECM volume to cell volume provided by Dr. M. Sardinia
 
 
-	//Number of diseased proteins (prions) in each cell, and in the local extracellular medium.
-	// The first matrix of the soln tensor (3D matrix) will store prion numbers.
+														 //Number of diseased proteins (prions) in each cell, and in the local extracellular medium.
+														 // The first matrix of the soln tensor (3D matrix) will store prion numbers.
 	soln[0][0][0] = 1;
 
 	for (int n = 1; n < tanknumber; n++)
@@ -186,7 +185,7 @@ int main()
 	cin >> keepgoing;
 	cout << endl;
 
-	if (keepgoing =1)
+	if (keepgoing = 1)
 		rungeK(timeStart, timeStop, numIter, cellVolume, ECMvolume, ECMprionCount, tanknumber);
 
 
