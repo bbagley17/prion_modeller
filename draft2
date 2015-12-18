@@ -20,7 +20,6 @@
 
 using namespace std;
 
-long double k[1000];
 static  long double soln[2][10000][10000];
 static int i;
 
@@ -46,11 +45,13 @@ void ECMupdate(long double& ECMprionCount, int tanknumber, long double cellVolum
 	}
 }
 
-void evalF(long double y1, long double y2, double dt, long double cellVolume, long double ECMvolume)
+long double evalF(long double y1, long double y2, double dt, long double cellVolume, long double ECMvolume)
 {
 	//Stat mech constant that still needs defining
+	long double k;
 	long double c1 = 0.00000000000000002;
-		k[j] = dt*(c1 * y1 * y2 / (cellVolume*cellVolume)); // Add ODEs here
+	k = dt*(c1 * y1 * y2 / (cellVolume*cellVolume)); // Add ODEs here
+	return(k);
 }
 
 void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVolume,
@@ -68,42 +69,28 @@ void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVol
 		{
 			inter1 = soln[0][j][i];
 			inter2 = soln[1][j][i];
-			k1j] = evalF(inter1, inter2, dt, cellVolume, ECMvolume);
+			k1[j] = evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 		}
 		evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 
-		for (int m = 0; m < o; m++)
-			k1[m] = k[m];
 		for (int j = 0; j < o; j++)
 		{
-			inter1[j] = soln[0][j][i];
-			inter2[j] = soln[1][j][i];
+			inter1 = soln[0][j][i] + .5*k1[j];
+			inter2 = soln[1][j][i];
+			k2[j] = evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 		}
-		for (int l = 0; l < o; l++)
-			inter1[l] += .5*k1[l];
-		evalF(inter1, inter2, dt, cellVolume, ECMvolume);
-		for (int m = 0; m < o; m++)
-			k2[m] = k[m];
 		for (int j = 0; j < o; j++)
 		{
-			inter1[j] = soln[0][j][i];
-			inter2[j] = soln[1][j][i];
+			inter1 = soln[0][j][i] + .5*k2[j];
+			inter2 = soln[1][j][i];
+			k3[j] = evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 		}
-		for (int l = 0; l < o; l++)
-			inter1[l] += .5*k2[l];
-		evalF(inter1, inter2, dt, cellVolume, ECMvolume);
-		for (int m = 0; m < o; m++)
-			k3[m] = k[m];
 		for (int j = 0; j < o; j++)
 		{
-			inter1[j] = soln[0][j][i];
-			inter2[j] = soln[1][j][i];
+			inter1 = soln[0][j][i] + k3[j];
+			inter2 = soln[1][j][i];
+			k4[j] = evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 		}
-		for (int l = 0; l < o; l++)
-			inter1[l] += k3[l];
-		evalF(inter1, inter2, dt, cellVolume, ECMvolume);
-		for (int m = 0; m < o; m++)
-			k4[m] = k[m];
 		for (int j = 0; j < o; j++)
 			soln[0][j][i + 1] = soln[0][j][i] + (k1[j] + 2 * k2[j] + 2 * k3[j] + k4[j]) / 6;
 		cout << "Timestep " << i << " complete." << endl;
