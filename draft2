@@ -54,7 +54,7 @@ void evalF(long double y1[], long double y2[], int o, double dt, long double cel
 		k[j] = dt*(c1 * y1[j] * y2[j] / (cellVolume*cellVolume)); // Add ODEs here
 }
 
-void rungeK(long double init[2][1000], long double tBeg, long double tEnd, int numIter, long double cellVolume,
+void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVolume,
 	long double ECMvolume, long double ECMprionCount, int tanknumber)
 {
 	double soln[2][1000][1000];
@@ -65,11 +65,6 @@ void rungeK(long double init[2][1000], long double tBeg, long double tEnd, int n
 	long double inter1[1000];
 	long double inter2[1000];   // Declare temporary array used for calclulating various k's.
 
-	for (int d = 0; d < numIter; d++)
-	{
-		soln[0][d][0] = init[0][d]; // Load initial conditions into solution matrix
-		soln[1][d][0] = init[1][d];
-	}
 	for (int i = 0; i < numIter; i++) {
 		for (int j = 0; j < o; j++)
 		{
@@ -138,41 +133,6 @@ int main()
 	//Volume of cell (NOTE: volume is in liters)
 	 long double cellVolume = 0.000000000002;
 
-	/* Later version will hopefully use classes for cells.
-	class Cell
-	{
-	public:
-	//Number of prions (diseased proteins) in each cell.
-	 long double prionCount;
-
-	//Number of healthy proteins in each cell.
-	 long double proteinCount;
-
-	//Rate at which cells excrete prions. Dependent of prion concentration.
-	 long double prionOutput;
-
-	//Rate at which cells uptake prions from extracellular medium. Dependent on extracellular prion concentration.
-	 long double prionInput;
-
-
-	//Production of new, healthy proteins in a timestep, which may then be added to proteinCount before the next timestep.
-	//The basic idea is that cells will try to maintain the initial number of proteins for standard function, so we just
-	//add enough to get the healthy count back up to 2,000,000 healthy proteins of the relelvant type.
-	//For initial version, this variable will not be used, as we're just going to update the healthy protein count back to 2mil
-	//every timestep.
-	// long double newproteinCount
-
-	 long double getPrionCount() { return prionCount };
-	 long double getProteinCount() { return proteinCount };
-	 long double getPrionOutput() { return prionOutput };
-	 long double getPrionInput() { return prionInput };
-	void resetProteinCount( long double newProteinCount)
-	{
-	proteinCount = newProteinCount;
-	}
-	};
-	*/
-
 
 	//Creating time values
 	const  long double timeStart = 0;
@@ -185,75 +145,38 @@ int main()
 	cin >> numIter;
 	cout << endl;
 
-
-	/*string num;
-	//string cellname;
-	//Cell cell1(1, 2000000, 0, 0);
-	for (cellnumber = 2; cellnumber < tanknumber; cellnumber++)
-	{
-	//Something to concatinate "cell" with the value of cellnumber
-	cellname = "cell" + std::toString(cellnumber);
-	Cell cellname(0.0, 2000000.0, 0.0, 0.0);
-	}
-	//And now we've made all the cells.
-	*/
-
-
-
-
 	//Let's make the extracellular medium.
 	 long double ECMprionCount = 0;
 	 long double ECMvolume = tanknumber*cellVolume * 0.55;//Estimated ratio of ECM volume to cell volume provided by Dr. M. Sardinia
 
 
-													//Establishing variable arrays based on number of tanks input by user. Using arrays makes it scalable (obviously),
-													// and should help simplify our later code
-
-													//Concentration of diseased proteins (prions) in each cell, and in the local extracellular medium. Last value is for ECM.
-	static  long double prionCount[1000];
-
-	prionCount[0] = 1;
+	//Number of diseased proteins (prions) in each cell, and in the local extracellular medium.
+	// The first matrix of the soln tensor (3D matrix) will store prion numbers.
+	soln[0][0][0] = 1;
 
 	for (int n = 1; n < tanknumber; n++)
 	{
-		prionCount[n] = 0;
+		soln[0][n][0] = 0;
 	}
 
-	//Concentration of healthy proteins in each cell.
-	static  long double healthyProteinCount[1000];
-
+	//Concentration of healthy proteins in each cell. 
+	//Second matrix of soln tensor will store healthy protein numbers.
 	for (int n = 0; n < tanknumber; n++)
 	{
-		healthyProteinCount[n] = 2000000;
+		soln[1][n][0] = 2000000;
+		//Average number of an arbitrary signalling protein at any time in a cell is 2 million, so we'll use this value for 
+		//the number of healthy proteins
 	}
-
-	//Rate at which cells excrete prions, either through tubules to adjacent cells of via dispersal of vesicles into ECM.
-	static  long double prionOutput[1000];
-	//Rate at which cells uptake secreted prions.
-	static  long double prionInput[1000];
-
-	//
-	//
-	//Rate at which cells produce healthy proteins. Not used in current version
-	// long double proteinSynthesisRate[tanknumber];
 
 
 	//Current data on the subject is actually rather curious, in that entire cell cultures die en-masse almost simultaneously 
 	//even though prion toxicity is time dependent. This suggests the prion spread may occur extremely rapidly. 
 
-	 long double init[2][1000];
-
-	for (int n = 0; n < tanknumber; n++)
-	{
-		init[0][n] = prionCount[n];
-		init[1][n] = healthyProteinCount[n];
-	}
-
 	for (int q = 0; q < 2; q++)
 	{
 		for (int n = 0; n < tanknumber; n++)
 		{
-			cout << init[q][n] << " ";
+			cout << soln[q][n][0] << " ";
 		}
 		cout << endl;
 	}
@@ -264,7 +187,7 @@ int main()
 	cout << endl;
 
 	if (keepgoing =1)
-		rungeK(init, timeStart, timeStop, numIter, cellVolume, ECMvolume, ECMprionCount, tanknumber);
+		rungeK(timeStart, timeStop, numIter, cellVolume, ECMvolume, ECMprionCount, tanknumber);
 
 
 	return 0;
