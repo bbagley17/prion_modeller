@@ -26,19 +26,18 @@ static int i;
 void ECMupdate(long double& ECMprionCount, int tanknumber, long double cellVolume, long double ECMvolume)
 {
 	//constants to be determined
-	long double k1 = 0.000000002;
-	long double k2 = 0.000000002;
+	long double k1 = 0.0000000000000000000002;
 	//temporary value for Prion concentration outside cell
 	long double tempECMprionConc;
 	//updates prion flow in and out of cells, cell by cell
 	for (int n = 0; n < tanknumber; n++)
 	{
 		tempECMprionConc = ECMprionCount / ECMvolume;
-		if (soln[0][n][i]>1000)
+		if (soln[0][n][i]>10)
 			ECMprionCount = ECMprionCount + k1*((soln[0][n][i] / cellVolume) - tempECMprionConc);
 		//The if statements are intended to prevent division by zero and other physically inaccurate operations
-		if (ECMprionCount > (10 * tanknumber))
-			soln[0][n][i] = soln[0][n][i] + k2*(tempECMprionConc - (soln[0][n][i] / cellVolume));
+		if (ECMprionCount > (tanknumber))
+			soln[0][n][i+1] = soln[0][n][i+1] + k1*(tempECMprionConc - (soln[0][n][i] / cellVolume));
 		//Accounting for synthesis of new proteins back to normal levels. Later versions will feature more precise
 		// calculation for this factor.
 		soln[1][n][i + 1] = 2000000;
@@ -48,8 +47,8 @@ void ECMupdate(long double& ECMprionCount, int tanknumber, long double cellVolum
 long double evalF(long double y1, long double y2, double dt, long double cellVolume, long double ECMvolume)
 {
 	//Stat mech constant that still needs defining
-	long double k =0;
-	long double c1 = 0.00000000000000002;
+	long double k = 0;
+	long double c1 = 0.0000000000000000000000000000002;
 	k = dt*(c1 * y1 * y2 / (cellVolume*cellVolume)); // Add ODEs here
 	return(k);
 }
