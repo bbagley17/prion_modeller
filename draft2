@@ -21,7 +21,7 @@
 using namespace std;
 
 long double k[1000];
-static  long double storedCounts[2][10000][10000];
+static  long double soln[2][10000][10000];
 static int i;
 
 void ECMupdate( long double& ECMprionCount, int tanknumber,  long double cellVolume,  long double ECMvolume)
@@ -35,14 +35,14 @@ void ECMupdate( long double& ECMprionCount, int tanknumber,  long double cellVol
 	for (int n = 0; n < tanknumber; n++)
 	{
 		tempECMprionConc = ECMprionCount / ECMvolume;
-		if (storedCounts[0][n][i]>1000)
-			ECMprionCount = ECMprionCount + k1*((storedCounts[0][n][i] / cellVolume) - tempECMprionConc);
+		if (soln[0][n][i]>1000)
+			ECMprionCount = ECMprionCount + k1*((soln[0][n][i] / cellVolume) - tempECMprionConc);
 		//The if statements are intended to prevent division by zero and other physically inaccurate operations
 		if (ECMprionCount > (10*tanknumber))
-			storedCounts[0][n][i] = storedCounts[0][n][i] + k2*(tempECMprionConc - (storedCounts[0][n][i] / cellVolume));
+			soln[0][n][i] = soln[0][n][i] + k2*(tempECMprionConc - (soln[0][n][i] / cellVolume));
 		//Accounting for synthesis of new proteins back to normal levels. Later versions will feature more precise
 		// calculation for this factor.
-		storedCounts[1][n][i+1] = 2000000;
+		soln[1][n][i+1] = 2000000;
 	}
 }
 
@@ -114,13 +114,6 @@ void rungeK(long double init[2][1000], long double tBeg, long double tEnd, int n
 			soln[0][j][i + 1] = soln[0][j][i] + (k1[j] + 2 * k2[j] + 2 * k3[j] + k4[j]) / 6;
 		cout << "Timestep " << i << " complete." << endl;
 		ECMupdate(ECMprionCount, tanknumber, cellVolume, ECMvolume);
-
-		//Something to set the first row of storedCounts as the latest column of the soln matrix
-		for (int j = 0; j < tanknumber; j++)
-		{
-			storedCounts[0][0][j] = soln[0][j][numIter + 1];
-			storedCounts[1][0][j] = soln[1][j][1];
-		}
 	}
 	//Outputting data
 	for (int i = 0; i < tanknumber; i++)
@@ -210,7 +203,6 @@ int main()
 
 	//Let's make the extracellular medium.
 	 long double ECMprionCount = 0;
-	//Still need to estimate this:
 	 long double ECMvolume = tanknumber*cellVolume * 0.55;//Estimated ratio of ECM volume to cell volume provided by Dr. M. Sardinia
 
 
