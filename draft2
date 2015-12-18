@@ -1,3 +1,18 @@
+//Prion Spread Simulator v1
+//Bagley, B. ; Ender, L. ;
+//
+//This simulation is intended to model prion pathogenesis in a neuron population. Prions infect healthy proteins within
+// a cell (converting said proteins into prions), and prions will additionally be exported and imported between each 
+//cell and the extracellular medium (ECM). 
+//
+//This is a prototype with numerous approximations made for the sake of time and computational requirements.
+//Later versions will replace these approximations with more precisely calculated values.
+//Additional future features include factoring in potential transmission via tubules between adjacent neurons
+//with the eventual goal of theoretically predicting which mechanism (vesicle excretion or spread via tubules)
+//predominates in prion spread.
+//
+//
+
 #include <iostream>
 #include <iomanip>
 #include <ctime>
@@ -5,34 +20,33 @@
 
 using namespace std;
 
-double k[1000];
-static double storedCounts[1000][1000];
+long double k[1000];
+static  long double storedCounts[2][10000][10000];
+static int i;
 
-void ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, double ECMvolume)
+void ECMupdate( long double& ECMprionCount, int tanknumber,  long double cellVolume,  long double ECMvolume)
 {
 	//constants to be determined
-	double k1 = 2;
-	double k2 = 2;
+	 double k1 = 2;
+	 double k2 = 2;
 	//temporary value for Prion concentration outside cell
-	double tempECMprionConc;
+	 long double tempECMprionConc;
 	//updates prion flow in and out of cells, cell by cell
 	for (int n = 0; n < tanknumber; n++)
 	{
+		tempECMprionConc = ECMprionCount / ECMvolume;
+		if (storedCounts[0][n][i]>1000)
+			ECMprionCount = ECMprionCount + k1*((storedCounts[0][n][i] / cellVolume) - tempECMprionConc);
 		//The if statements are intended to prevent division by zero and other physically inaccurate operations
-		if (ECMprionCount > (10 * tanknumber))
-		{
-			tempECMprionConc = ECMprionCount / ECMvolume;
-			if (storedCounts[0][n] > 1000)
-				ECMprionCount = ECMprionCount + k1*((storedCounts[0][n] / cellVolume) - tempECMprionConc);
-			storedCounts[0][n] = storedCounts[0][n] + k2*(tempECMprionConc - (storedCounts[0][n] / cellVolume));
-		}
+		if (ECMprionCount > (10*tanknumber))
+			storedCounts[0][n][i] = storedCounts[0][n][i] + k2*(tempECMprionConc - (storedCounts[0][n][i] / cellVolume));
 		//Accounting for synthesis of new proteins back to normal levels. Later versions will feature more precise
 		// calculation for this factor.
-		storedCounts[1][n] = 2000000;
+		storedCounts[1][n][i+1] = 2000000;
 	}
 }
 
-void evalF(double y1[], double y2[],int o, double dt, double cellVolume, double ECMvolume)
+void evalF(long double y1[], long double y2[], int o, double dt, long double cellVolume, long double ECMvolume)
 {
 	//Stat mech constant that still needs defining
 	double c1 = 2;
@@ -40,30 +54,30 @@ void evalF(double y1[], double y2[],int o, double dt, double cellVolume, double 
 		k[j] = dt*(c1 * y1[j] * y2[j] / (cellVolume*cellVolume)); // Add ODEs here
 }
 
-void rungeK(double init[2][1000], double tBeg, double tEnd, int numIter, double cellVolume,
-	double ECMvolume, double ECMprionCount, int tanknumber)
+void rungeK(long double init[2][1000], long double tBeg, long double tEnd, int numIter, long double cellVolume,
+	long double ECMvolume, long double ECMprionCount, int tanknumber)
 {
 	double soln[2][1000][1000];
 	int o = tanknumber; // Determine vertical length of initial conditions (# of ODEs to solve)
-	double k1[1000], k2[1000], k3[1000], k4[1000];
-	double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
+	long double k1[1000], k2[1000], k3[1000], k4[1000];
+	long double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
 										 //double soln[1000][1000]; // Initialize solution matrix
-	double inter1[1000];
-	double inter2[1000];   // Declare temporary array used for calclulating various k's.
+	long double inter1[1000];
+	long double inter2[1000];   // Declare temporary array used for calclulating various k's.
 
 	for (int d = 0; d < numIter; d++)
 	{
 		soln[0][d][0] = init[0][d]; // Load initial conditions into solution matrix
 		soln[1][d][0] = init[1][d];
 	}
-	for (int i = 0; i < numIter; i++) { 
+	for (int i = 0; i < numIter; i++) {
 		for (int j = 0; j < o; j++)
 		{
 			inter1[j] = soln[0][j][i];
 			inter2[j] = soln[1][j][i];
 		}
-		evalF(inter1, inter2, o , dt, cellVolume, ECMvolume);
-		
+		evalF(inter1, inter2, o, dt, cellVolume, ECMvolume);
+
 		for (int m = 0; m < o; m++)
 			k1[m] = k[m];
 		for (int j = 0; j < o; j++)
@@ -122,29 +136,30 @@ void rungeK(double init[2][1000], double tBeg, double tEnd, int numIter, double 
 
 int main()
 {
+	i = 0;
 	int tanknumber;
 	cout << "Please enter the number of cells to be modeled: ";
 	cin >> tanknumber;
 	cout << endl;
 
 	//Volume of cell (NOTE: volume is in liters)
-	double cellVolume = 0.000000000002;
+	 long double cellVolume = 0.000000000002;
 
 	/* Later version will hopefully use classes for cells.
 	class Cell
 	{
 	public:
 	//Number of prions (diseased proteins) in each cell.
-	double prionCount;
+	 long double prionCount;
 
 	//Number of healthy proteins in each cell.
-	double proteinCount;
+	 long double proteinCount;
 
 	//Rate at which cells excrete prions. Dependent of prion concentration.
-	double prionOutput;
+	 long double prionOutput;
 
 	//Rate at which cells uptake prions from extracellular medium. Dependent on extracellular prion concentration.
-	double prionInput;
+	 long double prionInput;
 
 
 	//Production of new, healthy proteins in a timestep, which may then be added to proteinCount before the next timestep.
@@ -152,13 +167,13 @@ int main()
 	//add enough to get the healthy count back up to 2,000,000 healthy proteins of the relelvant type.
 	//For initial version, this variable will not be used, as we're just going to update the healthy protein count back to 2mil
 	//every timestep.
-	//double newproteinCount
+	// long double newproteinCount
 
-	double getPrionCount() { return prionCount };
-	double getProteinCount() { return proteinCount };
-	double getPrionOutput() { return prionOutput };
-	double getPrionInput() { return prionInput };
-	void resetProteinCount(double newProteinCount)
+	 long double getPrionCount() { return prionCount };
+	 long double getProteinCount() { return proteinCount };
+	 long double getPrionOutput() { return prionOutput };
+	 long double getPrionInput() { return prionInput };
+	void resetProteinCount( long double newProteinCount)
 	{
 	proteinCount = newProteinCount;
 	}
@@ -167,9 +182,9 @@ int main()
 
 
 	//Creating time values
-	const double timeStart = 0;
-	static double timeStop = 0;
-	double numIter;
+	const  long double timeStart = 0;
+	static  long double timeStop = 0;
+	int numIter;
 
 	cout << "Please enter the stop time for the simulation (in [unit to be determined]):";
 	cin >> timeStop;
@@ -194,16 +209,16 @@ int main()
 
 
 	//Let's make the extracellular medium.
-	double ECMprionCount = 0;
+	 long double ECMprionCount = 0;
 	//Still need to estimate this:
-	double ECMvolume = tanknumber*cellVolume * 0.55;//Estimated ratio of ECM volume to cell volume provided by Dr. M. Sardinia
+	 long double ECMvolume = tanknumber*cellVolume * 0.55;//Estimated ratio of ECM volume to cell volume provided by Dr. M. Sardinia
 
 
 													//Establishing variable arrays based on number of tanks input by user. Using arrays makes it scalable (obviously),
 													// and should help simplify our later code
 
 													//Concentration of diseased proteins (prions) in each cell, and in the local extracellular medium. Last value is for ECM.
-	static double prionCount[1000];
+	static  long double prionCount[1000];
 
 	prionCount[0] = 1;
 
@@ -213,7 +228,7 @@ int main()
 	}
 
 	//Concentration of healthy proteins in each cell.
-	static double healthyProteinCount[1000];
+	static  long double healthyProteinCount[1000];
 
 	for (int n = 0; n < tanknumber; n++)
 	{
@@ -221,20 +236,20 @@ int main()
 	}
 
 	//Rate at which cells excrete prions, either through tubules to adjacent cells of via dispersal of vesicles into ECM.
-	static double prionOutput[1000];
+	static  long double prionOutput[1000];
 	//Rate at which cells uptake secreted prions.
-	static double prionInput[1000];
+	static  long double prionInput[1000];
 
 	//
 	//
 	//Rate at which cells produce healthy proteins. Not used in current version
-	//double proteinSynthesisRate[tanknumber];
+	// long double proteinSynthesisRate[tanknumber];
 
 
 	//Current data on the subject is actually rather curious, in that entire cell cultures die en-masse almost simultaneously 
 	//even though prion toxicity is time dependent. This suggests the prion spread may occur extremely rapidly. 
 
-	double init[2][1000];
+	 long double init[2][1000];
 
 	for (int n = 0; n < tanknumber; n++)
 	{
@@ -251,32 +266,15 @@ int main()
 		cout << endl;
 	}
 
-	int keepgoing = 0;
+	int keepgoing;
 	cout << "Please take this opportunity to review the initial values. Enter 1 to continue the simulation:";
 	cin >> keepgoing;
 	cout << endl;
 
-	for (int q = 0; q < 2; q++)
-	{
-		for (int n = 0; n < tanknumber; n++)
-		{
-			storedCounts[q][n] = init[q][n];
-		}
-		cout << endl;
-	}
-
-	if (keepgoing == 1)
+	if (keepgoing =1)
 		rungeK(init, timeStart, timeStop, numIter, cellVolume, ECMvolume, ECMprionCount, tanknumber);
 
 
-	keepgoing = 0;
-
-	cout << "Please review the final values:";
-	cout << endl << "Please enter 1 to end the simulation:";
-	cin >> keepgoing;
-
-
-	if (keepgoing == 1)
-		return 0;
+	return 0;
 
 }
