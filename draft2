@@ -5,10 +5,10 @@
 
 using namespace std;
 
-double k[3];
+double k[1000];
 static double storedCounts[1000][1000];
 
-double ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, double ECMvolume)
+void ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, double ECMvolume)
 {
 	//constants to be determined
 	double k1 = 2;
@@ -19,10 +19,10 @@ double ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, doubl
 	for (int n = 0; n < tanknumber; n++)
 	{
 		//The if statements are intended to prevent division by zero and other physically inaccurate operations
-		if (ECMprionCount >(10 * tanknumber))
+		if (ECMprionCount > (10 * tanknumber))
 		{
 			tempECMprionConc = ECMprionCount / ECMvolume;
-			if (storedCounts[0][n]>1000)
+			if (storedCounts[0][n] > 1000)
 				ECMprionCount = ECMprionCount + k1*((storedCounts[0][n] / cellVolume) - tempECMprionConc);
 			storedCounts[0][n] = storedCounts[0][n] + k2*(tempECMprionConc - (storedCounts[0][n] / cellVolume));
 		}
@@ -30,71 +30,88 @@ double ECMupdate(double& ECMprionCount, int tanknumber, double cellVolume, doubl
 		// calculation for this factor.
 		storedCounts[1][n] = 2000000;
 	}
-	return storedCounts;
 }
 
-void evalF(double y[], double dt, double cellVolume, double ECMvolume)
+void evalF(double y1[], double y2[],int o, double dt, double cellVolume, double ECMvolume)
 {
 	//Stat mech constant that still needs defining
 	double c1 = 2;
-	k[0] = dt*(c1 * y[0] * y[1] / (cellVolume*cellVolume)); // Add ODEs here
-															//k[1] = dt*(3 * y[1] + 5 * y[2]);
-															//k[2] = dt*(3 * y[0] + 5 * y[2]);
+	for (int j = 0; j < o; j++)
+		k[j] = dt*(c1 * y1[j] * y2[j] / (cellVolume*cellVolume)); // Add ODEs here
 }
 
-void rungeK(double init[2][1000], double tBeg, double tEnd, const int numIter, double cellVolume,
+void rungeK(double init[2][1000], double tBeg, double tEnd, int numIter, double cellVolume,
 	double ECMvolume, double ECMprionCount, int tanknumber)
 {
-	double soln[1000][1000];
+	double soln[2][1000][1000];
 	int o = tanknumber; // Determine vertical length of initial conditions (# of ODEs to solve)
 	double k1[1000], k2[1000], k3[1000], k4[1000];
 	double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
 										 //double soln[1000][1000]; // Initialize solution matrix
-	double inter[1000]; // Declare temporary array used for calclulating various k's.
+	double inter1[1000];
+	double inter2[1000];   // Declare temporary array used for calclulating various k's.
+
 	for (int d = 0; d < numIter; d++)
 	{
-		soln[d][0] = init[0][d]; // Load initial conditions into solution matrix
+		soln[0][d][0] = init[0][d]; // Load initial conditions into solution matrix
+		soln[1][d][0] = init[1][d];
 	}
-	for (int i = 0; i < numIter; i++) { // Runga kutta doing its magic. I've checked its output with some matlab code I found and it's working perfectly.
+	for (int i = 0; i < numIter; i++) { 
 		for (int j = 0; j < o; j++)
-			inter[j] = soln[j][i];
-		evalF(inter, dt, cellVolume, ECMvolume);
+		{
+			inter1[j] = soln[0][j][i];
+			inter2[j] = soln[1][j][i];
+		}
+		evalF(inter1, inter2, o , dt, cellVolume, ECMvolume);
+		
 		for (int m = 0; m < o; m++)
 			k1[m] = k[m];
 		for (int j = 0; j < o; j++)
-			inter[j] = soln[j][i];
+		{
+			inter1[j] = soln[0][j][i];
+			inter2[j] = soln[1][j][i];
+		}
 		for (int l = 0; l < o; l++)
-			inter[l] += .5*k1[l];
-		evalF(inter, dt, cellVolume, ECMvolume);
+			inter1[l] += .5*k1[l];
+		evalF(inter1, inter2, o, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k2[m] = k[m];
 		for (int j = 0; j < o; j++)
-			inter[j] = soln[j][i];
+		{
+			inter1[j] = soln[0][j][i];
+			inter2[j] = soln[1][j][i];
+		}
 		for (int l = 0; l < o; l++)
-			inter[l] += .5*k2[l];
-		evalF(inter, dt, cellVolume, ECMvolume);
+			inter1[l] += .5*k2[l];
+		evalF(inter1, inter2, o, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k3[m] = k[m];
 		for (int j = 0; j < o; j++)
-			inter[j] = soln[j][i];
+		{
+			inter1[j] = soln[0][j][i];
+			inter2[j] = soln[1][j][i];
+		}
 		for (int l = 0; l < o; l++)
-			inter[l] += k3[l];
-		evalF(inter, dt, cellVolume, ECMvolume);
+			inter1[l] += k3[l];
+		evalF(inter1, inter2, o, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k4[m] = k[m];
 		for (int j = 0; j < o; j++)
-			soln[j][i + 1] = soln[j][i] + (k1[j] + 2 * k2[j] + 2 * k3[j] + k4[j]) / 6;
+			soln[0][j][i + 1] = soln[0][j][i] + (k1[j] + 2 * k2[j] + 2 * k3[j] + k4[j]) / 6;
 		cout << "Timestep " << i << " complete." << endl;
 		ECMupdate(ECMprionCount, tanknumber, cellVolume, ECMvolume);
 
 		//Something to set the first row of storedCounts as the latest column of the soln matrix
 		for (int j = 0; j < tanknumber; j++)
-			storedCounts[0][j] = soln[j][numIter + 1];
+		{
+			storedCounts[0][0][j] = soln[0][j][numIter + 1];
+			storedCounts[1][0][j] = soln[1][j][1];
+		}
 	}
 	//Outputting data
 	for (int i = 0; i < tanknumber; i++)
 	{
-		cout << "Evolution of Tank " << i+1 << ":";
+		cout << "Evolution of Tank " << i + 1 << ":";
 		for (int j = 0; j <= numIter; j++)
 		{
 			cout << soln[i][j] << " " << endl;
@@ -261,5 +278,5 @@ int main()
 
 	if (keepgoing == 1)
 		return 0;
-	
+
 }
