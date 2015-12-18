@@ -20,7 +20,7 @@
 
 using namespace std;
 
-static  long double soln[2][10000][10000];
+static long double soln[2][10000][10000];
 static int i;
 
 void ECMupdate(long double& ECMprionCount, int tanknumber, long double cellVolume, long double ECMvolume)
@@ -48,7 +48,7 @@ void ECMupdate(long double& ECMprionCount, int tanknumber, long double cellVolum
 long double evalF(long double y1, long double y2, double dt, long double cellVolume, long double ECMvolume)
 {
 	//Stat mech constant that still needs defining
-	long double k;
+	long double k =0;
 	long double c1 = 0.00000000000000002;
 	k = dt*(c1 * y1 * y2 / (cellVolume*cellVolume)); // Add ODEs here
 	return(k);
@@ -64,7 +64,7 @@ void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVol
 	long double inter1;
 	long double inter2;   // Declare temporary array used for calclulating various k's.
 
-	for (int i = 0; i < numIter; i++) {
+	for (i = 0; i < numIter; i++) {
 		for (int j = 0; j < o; j++)
 		{
 			inter1 = soln[0][j][i];
