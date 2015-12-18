@@ -27,8 +27,8 @@ static int i;
 void ECMupdate(long double& ECMprionCount, int tanknumber, long double cellVolume, long double ECMvolume)
 {
 	//constants to be determined
-	double k1 = 2;
-	double k2 = 2;
+	long double k1 = 0.000000002;
+	long double k2 = 0.000000002;
 	//temporary value for Prion concentration outside cell
 	long double tempECMprionConc;
 	//updates prion flow in and out of cells, cell by cell
@@ -46,12 +46,11 @@ void ECMupdate(long double& ECMprionCount, int tanknumber, long double cellVolum
 	}
 }
 
-void evalF(long double y1[], long double y2[], int o, double dt, long double cellVolume, long double ECMvolume)
+void evalF(long double y1, long double y2, double dt, long double cellVolume, long double ECMvolume)
 {
 	//Stat mech constant that still needs defining
-	double c1 = 2;
-	for (int j = 0; j < o; j++)
-		k[j] = dt*(c1 * y1[j] * y2[j] / (cellVolume*cellVolume)); // Add ODEs here
+	long double c1 = 0.00000000000000002;
+		k[j] = dt*(c1 * y1 * y2 / (cellVolume*cellVolume)); // Add ODEs here
 }
 
 void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVolume,
@@ -61,16 +60,17 @@ void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVol
 	long double k1[1000], k2[1000], k3[1000], k4[1000];
 	long double dt = (tEnd - tBeg) / numIter; // Determine dt based on start time, end time, and number of iterations desired **Does the fact that these are ints break anything?***
 											  //double soln[1000][1000]; // Initialize solution matrix
-	long double inter1[1000];
-	long double inter2[1000];   // Declare temporary array used for calclulating various k's.
+	long double inter1;
+	long double inter2;   // Declare temporary array used for calclulating various k's.
 
 	for (int i = 0; i < numIter; i++) {
 		for (int j = 0; j < o; j++)
 		{
-			inter1[j] = soln[0][j][i];
-			inter2[j] = soln[1][j][i];
+			inter1 = soln[0][j][i];
+			inter2 = soln[1][j][i];
+			k1j] = evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 		}
-		evalF(inter1, inter2, o, dt, cellVolume, ECMvolume);
+		evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 
 		for (int m = 0; m < o; m++)
 			k1[m] = k[m];
@@ -81,7 +81,7 @@ void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVol
 		}
 		for (int l = 0; l < o; l++)
 			inter1[l] += .5*k1[l];
-		evalF(inter1, inter2, o, dt, cellVolume, ECMvolume);
+		evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k2[m] = k[m];
 		for (int j = 0; j < o; j++)
@@ -91,7 +91,7 @@ void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVol
 		}
 		for (int l = 0; l < o; l++)
 			inter1[l] += .5*k2[l];
-		evalF(inter1, inter2, o, dt, cellVolume, ECMvolume);
+		evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k3[m] = k[m];
 		for (int j = 0; j < o; j++)
@@ -101,7 +101,7 @@ void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVol
 		}
 		for (int l = 0; l < o; l++)
 			inter1[l] += k3[l];
-		evalF(inter1, inter2, o, dt, cellVolume, ECMvolume);
+		evalF(inter1, inter2, dt, cellVolume, ECMvolume);
 		for (int m = 0; m < o; m++)
 			k4[m] = k[m];
 		for (int j = 0; j < o; j++)
@@ -115,7 +115,7 @@ void rungeK(long double tBeg, long double tEnd, int numIter, long double cellVol
 		cout << "Evolution of Tank " << i + 1 << ":";
 		for (int j = 0; j <= numIter; j++)
 		{
-			cout << soln[i][j] << " " << endl;
+			cout << soln[0][i][j] << " ";
 		}
 		cout << endl << endl;
 	}
