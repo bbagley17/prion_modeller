@@ -8,7 +8,7 @@ using namespace std;
 class Vesicle
 {
 private:
-	int prionCnt;
+	double prionCnt;
 	double xCrd;
 	double yCrd;
 	double zCrd;
