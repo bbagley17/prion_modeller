@@ -30,6 +30,7 @@ public:
 	//Actual functional cell constructor
 	Cell(int inputPrionCount, double x, double y, double z)
 	{
+		alive = true;
 		prionCount = inputPrionCount;
 		xCoord = x;
 		yCoord = y;
