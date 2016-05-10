@@ -10,7 +10,7 @@ class Cell
 {
 private:
 	bool alive;
-	int prionCount;
+	double prionCount;
 	double xCoord;
 	double yCoord;
 	double zCoord;
