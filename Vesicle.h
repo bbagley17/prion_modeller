@@ -7,13 +7,12 @@ using namespace std;
 #define Vesicle_H_
 class Vesicle
 {
-private:
+public:
 	double prionCnt;
 	double xCrd;
 	double yCrd;
 	double zCrd;
 
-public:
 	Vesicle(int prionInput, double startX, double startY, double startZ)
 	{
 		prionCnt = prionInput;
