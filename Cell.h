@@ -47,7 +47,7 @@ public:
 	void createVesicle();
 
 	//Function which will call the ODE solver and add prions to the internal count on the basis of propagation w/in the cell
-	void prionSpread();
+	void prionSpread(double);
 
 	//Once the cell is "dead"... not sure how to model this, actually. May remove this feature.
 	void isDead();
