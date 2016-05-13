@@ -41,9 +41,17 @@ void rungekutta() {
 	double* k4 = new double(numCells);
 
 	f(h, k1, k2, k3, k4, 1, numCells);
+	for (int i = 0; i < numCells; i++)
+		k1[i] = k1[i]*dt;
 	f(h, k1, k2, k3, k4, 2, numCells);
+	for (int i = 0; i < numCells; i++)
+		k2[i] = k2[i]*dt;
 	f(h, k1, k2, k3, k4, 3, numCells);
+	for (int i = 0; i < numCells; i++)
+		k3[i] = k3[i]*dt;
 	f(h, k1, k2, k3, k4, 4, numCells);
+	for (int i = 0; i < numCells; i++)
+		k4[i] = k4[i]*dt;
 
 
 
