@@ -2,10 +2,14 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include "Cell.h"
+#include "Vesicle.h"
 
 using namespace std;
 int cellCount;
-vector<Cell> cells;
+vector<Cell> cellVector;
+int vesicleCount;
+vector<Vesicle> vesicleVector;
 
 void initializer();
 void timeStep();
@@ -29,6 +33,18 @@ void timeStep()
 	for (int n = 0; n < timeFrame; n++)
 	{
 		//Stuff that iterates Luke's ODEs, stuff the iterates vesicle creation and propagation
+
+		//For each vesicle, iterates the thermodynamic movement of the vesicle 
+		for (int q = 0; q < vesicleCount; q++)
+		{
+			vesicleVector[q].randomWalk();
+		}
+
+		//For each cell, checks whether a vesicle needs to be created and, if so, creates one
+		for (int v = 0; v < vesicleCount; v++)
+		{
+			cellVector[v].createVesicle();
+		}
 	}
 
 }
@@ -53,10 +69,10 @@ void output()
 
 	for (int n = 0; n < cellCount; n++)
 	{
-		outputFile << cells[n].prionCount << endl;
-		outputFile << cells[n].x << endl;
-		outputFile << cells[n].y << endl;
-		outputFile << cells[n].z << endl;
+		outputFile << cellVector[n].prionCount << endl;
+		outputFile << cellVector[n].xCoord << endl;
+		outputFile << cellVector[n].yCoord << endl;
+		outputFile << cellVector[n].zCoord << endl;
 	}
 }
 void initializer()
