@@ -103,7 +103,7 @@ void Cell::createVesicle()
 }
 
 //Call ODE solver to model prion spread within cell
-void Cell::prionSpread()
+void Cell::prionSpread(double prionCount_)
 {
-
+prionCount = prionCount_
 }
