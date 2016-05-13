@@ -9,14 +9,15 @@ using namespace std;
 class Cell
 {
 private:
+	double maxPrionDensity = ;
+public:
 	bool alive;
 	double prionCount;
 	double xCoord;
 	double yCoord;
 	double zCoord;
-	double radius;
+	int radius;
 
-public:
 	//Default constructor for cells
 	Cell()
 	{
@@ -35,6 +36,8 @@ public:
 		xCoord = x;
 		yCoord = y;
 		zCoord = z;
+		radius = 500; //This is simply a product of using the diameter of an exosome (excreted vesicle), 100nm as the reference value
+			//So where a vesicle is 1 unit in diameter, the Cell is 1000 units (each of 100nm) in diameter, which neurons are
 	}
 
 	//Checks to see if any vesicles have collided with the cell's boundaries
@@ -49,5 +52,6 @@ public:
 	//Once the cell is "dead"... not sure how to model this, actually. May remove this feature.
 	void isDead();
 
-}; 
+
+};
 #endif
