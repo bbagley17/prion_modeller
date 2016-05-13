@@ -1,10 +1,11 @@
 #include <iostream>
 #include "Cell.h"
-#include "Source.cpp"
+#include "Vesicle.h"
+
 
 using namespace std;
 
-void Cell::checkCollision()
+void Cell::checkCollision(vector<Vesicle>& vesicleVector)
 {
 	//Scans through entire vesicle vector to see if any vesicles have collided with the cell
 	for (int n = 0; n < vesicleVector.size(); n++)
@@ -16,7 +17,7 @@ void Cell::checkCollision()
 	}
 }
 
-void Cell::createVesicle()
+void Cell::createVesicle(vector<Vesicle>& vesicleVector, int& vesicleCount)
 {
 	if ((prionCount / (3.14159 * radius * radius) < maxPrionDensity)) //parameter for the max number of prions/volume a cell can hold)
 	{
@@ -103,7 +104,7 @@ void Cell::createVesicle()
 }
 
 //Call ODE solver to model prion spread within cell
-void Cell::prionSpread(double prionCount_)
+void Cell::prionSpread()
 {
-prionCount = prionCount_
+
 }
