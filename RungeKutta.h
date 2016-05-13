@@ -1,13 +1,15 @@
 #include <iostream>
 #include <vector>
 #include "Cell.h"
-#include "Source.cpp"
 #include "Vesicle.h"
+
+void f(vector<Cell>& cellVector, bool** h, double* k1, double* k2, double* k3, double* k4, int cycle, int numCells);
 
 
 #ifndef RUNGEKUTTA_H
 #define RUNGE KUTTA_H
-void rungekutta() {
+void rungekutta(vector<Cell>& cellVector) 
+{
 	int numCells = cellVector.size();
 	double mindist = 1;
 	int numCellsClose = 0;
@@ -40,18 +42,18 @@ void rungekutta() {
 	double* k3 = new double(numCells);
 	double* k4 = new double(numCells);
 
-	f(h, k1, k2, k3, k4, 1, numCells);
+	f(cellVector, h, k1, k2, k3, k4, 1, numCells);
 	for (int i = 0; i < numCells; i++)
-		k1[i] = k1[i]*dt;
-	f(h, k1, k2, k3, k4, 2, numCells);
+		k1[i] = k1[i] * dt;
+	f(cellVector, h, k1, k2, k3, k4, 2, numCells);
 	for (int i = 0; i < numCells; i++)
-		k2[i] = k2[i]*dt;
-	f(h, k1, k2, k3, k4, 3, numCells);
+		k2[i] = k2[i] * dt;
+	f(cellVector, h, k1, k2, k3, k4, 3, numCells);
 	for (int i = 0; i < numCells; i++)
-		k3[i] = k3[i]*dt;
-	f(h, k1, k2, k3, k4, 4, numCells);
+		k3[i] = k3[i] * dt;
+	f(cellVector, h, k1, k2, k3, k4, 4, numCells);
 	for (int i = 0; i < numCells; i++)
-		k4[i] = k4[i]*dt;
+		k4[i] = k4[i] * dt;
 
 
 
@@ -62,7 +64,9 @@ void rungekutta() {
 }
 
 
-void f(bool** h, double* k1, double* k2, double* k3, double* k4, int cycle, int numCells) {
+
+void f(vector<Cell>& cellVector, bool** h, double* k1, double* k2, double* k3, double* k4, int cycle, int numCells)
+{
 	long double constant = .000000005;
 	long double constant2 = .00000000000000005;
 	for (int i = 0; i < numCells; i++) {
@@ -99,4 +103,5 @@ void f(bool** h, double* k1, double* k2, double* k3, double* k4, int cycle, int 
 			}
 		}
 	}
+}
 #endif
