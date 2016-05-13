@@ -9,7 +9,7 @@ using namespace std;
 class Cell
 {
 private:
-	double maxPrionDensity = ;
+	double maxPrionDensity = 0.000000002;
 public:
 	bool alive;
 	double prionCount;
@@ -41,13 +41,13 @@ public:
 	}
 
 	//Checks to see if any vesicles have collided with the cell's boundaries
-	void checkCollision();
+	void checkCollision(vector<Vesicle>& vesicleVector);
 
 	//If prionCount/volume ration surpasses certain level, excrete a vesicle full of prions
-	void createVesicle();
+	void createVesicle(vector<Vesicle>& vesicleVector, int& vesicleCount);
 
 	//Function which will call the ODE solver and add prions to the internal count on the basis of propagation w/in the cell
-	void prionSpread(double);
+	void prionSpread();
 
 	//Once the cell is "dead"... not sure how to model this, actually. May remove this feature.
 	void isDead();
