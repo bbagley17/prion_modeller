@@ -82,7 +82,7 @@ void output()
 }
 void initializer()
 {
-	/* string inputFileName;
+	string inputFileName;
 	cout << "Please enter the name of the initialization file:" << endl;
 	cin >> inputFileName;
 	cout << endl;
@@ -100,7 +100,7 @@ void initializer()
 		cin >> inputFileName;
 		cout << endl;
 		ifstream input;
-		input.open(inputFileName);
+		input.open(inputFileName, ios::in);
 		if (input.fail())
 		{
 			woops = true;
@@ -110,11 +110,12 @@ void initializer()
 			woops = false;
 		}
 	}
-	*/
-	ifstream input;
+	
+	/*ifstream input;
 	input.open("new2.txt", ios::in);
 	string line;
-	int cells =0;
+	*/
+	int cells = 0;
 	input >> cells;
 	for (int n = 0; n < cells; n++)
 	{
@@ -124,13 +125,12 @@ void initializer()
 		double y;
 		double z;
 
-		string dontGiveADamn;
 
 		input >> inputPrionCount;
 		input >> x;
 		input >> y;
 		input >> z;
-		input >> dontGiveADamn;
+
 
 		cellVector.push_back(Cell(inputPrionCount, x, y, z));
 		cellCount++;
@@ -141,4 +141,5 @@ void initializer()
 		cout << "Cell " << n << " has prion count of:" << cellVector[n].prionCount << endl;
 		cout << "Coordinates of " << cellVector[n].xCoord << ", " << cellVector[n].yCoord << ", " << cellVector[n].zCoord << endl;
 	}
+	input.close();
 }
