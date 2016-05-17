@@ -7,7 +7,7 @@
 
 void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3, double* k4, int cycle, int numCells);
 
-void rungekutta(vector<Cell>& cellVector) 
+void rungekutta(vector<Cell>& cellVector)
 {
 	int numCells = cellVector.size();
 	double mindist = 1;
@@ -15,11 +15,11 @@ void rungekutta(vector<Cell>& cellVector)
 	/*bool** h;
 	h = new bool*[numCells]; // allocates 2d bool array
 	for (int i = 0; i < numCells; i++) {
-		bool* withinArray = (NULL);
-		withinArray = new bool[numCells];
-		h[i] = withinArray;
-		for (int j = 0; j < numCells; j++)
-			h[i][j] = 0;
+	bool* withinArray = (NULL);
+	withinArray = new bool[numCells];
+	h[i] = withinArray;
+	for (int j = 0; j < numCells; j++)
+	h[i][j] = 0;
 	}*/
 	bool h[7][7];
 
@@ -59,7 +59,12 @@ void rungekutta(vector<Cell>& cellVector)
 	for (int i = 0; i < numCells; i++)
 		k4[i] = k4[i] * dt;
 
-
+	//
+	//
+	//
+	//The values are changing (or not changing) in the section below:
+	//
+	//
 
 	for (int i = 0; i < numCells; i++) {
 		cout << cellVector.at(i).prionCount << " ";
@@ -67,14 +72,17 @@ void rungekutta(vector<Cell>& cellVector)
 		cellVector.at(i).prionCount = temp;
 		cout << cellVector.at(i).prionCount << endl;
 	}
+	//
+	//
+	//
 }
 
 
 
 void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3, double* k4, int cycle, int numCells)
 {
-	long double constant = .000000005;
-	long double constant2 = .00000000000000005;
+	long double constant = .00000000000000000000000005;
+	long double constant2 = .0000000000000000000000000005;
 	for (int i = 0; i < numCells; i++) {
 		switch (cycle) {
 		case 1:
