@@ -8,9 +8,8 @@ using namespace std;
 #define Cell_H_
 class Cell
 {
-private:
-	double maxPrionDensity = 0.000000002;
 public:
+	double maxPrionDensity = 80000;
 	bool alive;
 	double prionCount;
 	double xCoord;
@@ -41,10 +40,13 @@ public:
 	}
 
 	//Checks to see if any vesicles have collided with the cell's boundaries
-	void checkCollision(vector<Vesicle>& vesicleVector);
+	void checkCollision(vector<Vesicle>& vesicleVector, int& vesicleCount);
 
-	//If prionCount/volume ration surpasses certain level, excrete a vesicle full of prions
+
+
+	//If prionCount/volume ratio surpasses certain level, excrete a vesicle full of prions
 	void createVesicle(vector<Vesicle>& vesicleVector, int& vesicleCount);
+
 
 	//Function which will call the ODE solver and add prions to the internal count on the basis of propagation w/in the cell
 	void prionSpread();
