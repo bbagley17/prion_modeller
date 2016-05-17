@@ -1,24 +1,28 @@
+#ifndef RUNGEKUTTA_H
+#define RUNGE KUTTA_H
 #include <iostream>
 #include <vector>
 #include "Cell.h"
 #include "Vesicle.h"
 
-void f(vector<Cell>& cellVector, bool** h, double* k1, double* k2, double* k3, double* k4, int cycle, int numCells);
+void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3, double* k4, int cycle, int numCells);
 
-
-#ifndef RUNGEKUTTA_H
-#define RUNGE KUTTA_H
 void rungekutta(vector<Cell>& cellVector) 
 {
 	int numCells = cellVector.size();
 	double mindist = 1;
 	int numCellsClose = 0;
-	bool** h = new bool*[numCells]; // allocates 2d bool array
+	/*bool** h;
+	h = new bool*[numCells]; // allocates 2d bool array
 	for (int i = 0; i < numCells; i++) {
 		bool* withinArray = (NULL);
 		withinArray = new bool[numCells];
 		h[i] = withinArray;
-	}
+		for (int j = 0; j < numCells; j++)
+			h[i][j] = 0;
+	}*/
+	bool h[7][7];
+
 
 
 	for (int i = 0; i < numCells; i++) {
@@ -35,12 +39,12 @@ void rungekutta(vector<Cell>& cellVector)
 		}
 	}
 
-	double dt = .05; //timestep
+	double dt = 1; //timestep
 
-	double* k1 = new double(numCells);
-	double* k2 = new double(numCells);
-	double* k3 = new double(numCells);
-	double* k4 = new double(numCells);
+	double k1[4] = { 0 };
+	double k2[4] = { 0 };
+	double k3[4] = { 0 };
+	double k4[4] = { 0 };
 
 	f(cellVector, h, k1, k2, k3, k4, 1, numCells);
 	for (int i = 0; i < numCells; i++)
@@ -58,47 +62,55 @@ void rungekutta(vector<Cell>& cellVector)
 
 
 	for (int i = 0; i < numCells; i++) {
+		cout << cellVector.at(i).prionCount << " ";
 		double temp = cellVector.at(i).prionCount + (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6;
 		cellVector.at(i).prionCount = temp;
+		cout << cellVector.at(i).prionCount << endl;
 	}
 }
 
 
 
-void f(vector<Cell>& cellVector, bool** h, double* k1, double* k2, double* k3, double* k4, int cycle, int numCells)
+void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3, double* k4, int cycle, int numCells)
 {
 	long double constant = .000000005;
 	long double constant2 = .00000000000000005;
 	for (int i = 0; i < numCells; i++) {
+		switch (cycle) {
+		case 1:
+			if (cellVector.at(i).prionCount > 0) {
+				k1[i] += -constant2*(cellVector.at(i).prionCount);
+			}
+		case 2:
+			if (cellVector.at(i).prionCount > 0) {
+				k2[i] += -constant2*(cellVector.at(i).prionCount + .5*k1[i]);
+			}
+		case 3:
+			if (cellVector.at(i).prionCount > 0) {
+				k3[i] += -constant2*(cellVector.at(i).prionCount + .5*k2[i]);
+			}
+		case 4:
+			if (cellVector.at(i).prionCount > 0) {
+				k4[i] += -constant2*(cellVector.at(i).prionCount + k3[i]);
+			}
+		}
 		for (int j = 0; j < numCells; j++) {
 			switch (cycle) {
 			case 1:
 				if (h[i][j] && (i != j)) {
-					k1[i] += constant*cellVector.at(j).prionCount - constant*cellVector.at(i).prionCount; //need to define what "constant" is
-				}
-				if (cellVector.at(i).prionCount > 0) {
-					k1[i] += -constant2*(cellVector.at(i).prionCount);
+					k1[i] += (constant*cellVector.at(j).prionCount - constant*cellVector.at(i).prionCount); //need to define what "constant" is
 				}
 			case 2:
 				if (h[i][j] && (i != j)) {
-					k2[i] += constant*(cellVector.at(j).prionCount + .5*k1[j]) - constant*(cellVector.at(i).prionCount + .5*k1[i]);
-				}
-				if (cellVector.at(i).prionCount > 0) {
-					k2[i] += -constant2*(cellVector.at(i).prionCount + .5*k1[i]);
+					k2[i] += (constant*(cellVector.at(j).prionCount + .5*k1[j]) - constant*(cellVector.at(i).prionCount + .5*k1[i]));
 				}
 			case 3:
 				if (h[i][j] && (i != j)) {
-					k3[i] += constant*(cellVector.at(j).prionCount + .5*k2[j]) - constant*(cellVector.at(i).prionCount + .5*k2[i]);
-				}
-				if (cellVector.at(i).prionCount > 0) {
-					k3[i] += -constant2*(cellVector.at(i).prionCount + .5*k2[i]);
+					k3[i] += (constant*(cellVector.at(j).prionCount + .5*k2[j]) - constant*(cellVector.at(i).prionCount + .5*k2[i]));
 				}
 			case 4:
 				if (h[i][j] && (i != j)) {
-					k4[i] += constant*(cellVector.at(j).prionCount + k3[j]) - constant*(cellVector.at(i).prionCount + k3[i]);
-				}
-				if (cellVector.at(i).prionCount > 0) {
-					k4[i] += -constant2*(cellVector.at(i).prionCount + k3[i]);
+					k4[i] += (constant*(cellVector.at(j).prionCount + k3[j]) - constant*(cellVector.at(i).prionCount + k3[i]));
 				}
 			}
 		}
