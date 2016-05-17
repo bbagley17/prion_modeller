@@ -12,6 +12,8 @@ void initializer();
 void timeStep();
 void output();
 
+//Constant for spread rate of prions within cell
+double c1 = 0.05;
 int cellCount;
 vector<Cell> cellVector;
 int vesicleCount;
@@ -36,18 +38,61 @@ void timeStep()
 	for (int n = 0; n < timeFrame; n++)
 	{
 		//Stuff that iterates Luke's ODEs, stuff the iterates vesicle creation and propagation
-		rungekutta(cellVector);
+		//rungekutta(cellVector);
 
+		//Small bit of code to model spread of prions within cell, and creation of vesicles, and checks for 
+		// vesicle-cell collisions
+		for (int q = 0; q < cellCount; q++)
+		{
+			cellVector[q].prionCount += c1 * cellVector[q].prionCount;
+			if ((cellVector[q].prionCount > cellVector[q].maxPrionDensity)) //parameter for the max number of prions/volume a cell can hold)
+			{
+				cellVector[q].createVesicle(vesicleVector, vesicleCount);
+			}
+
+			cellVector[q].checkCollision(vesicleVector, vesicleCount);
+		}
 		//For each vesicle, iterates the thermodynamic movement of the vesicle 
 		for (int q = 0; q < vesicleCount; q++)
 		{
 			vesicleVector[q].randomWalk();
+
+			//If the vesicle moves a certain distance away from the entire population of cells, 
+			// that vesicle is simply deleted to reduce computational cost
+			bool close = false;
+			for (int z = 0; z < cellCount; z++)
+			{
+				if (1000 > abs(vesicleVector[q].xCrd - cellVector[z].xCoord))
+				{
+					close = true;
+				}
+				if (1000 > abs(vesicleVector[q].yCrd - cellVector[z].yCoord))
+				{
+					close = true;
+				}
+				if (1000 > abs(vesicleVector[q].zCrd - cellVector[z].xCoord))
+				{
+					close = true;
+				}
+			}
+			if (close == false)
+			{
+				vesicleVector.erase(vesicleVector.begin() + q);
+				vesicleCount--;
+			}
 		}
 
-		//For each cell, checks whether a vesicle needs to be created and, if so, creates one
-		for (int v = 0; v < vesicleCount; v++)
+		//Outputting the values associated with each vesicle and cell, mainly for debugging purposes.
+		//May be commented out for actual runs, unless desired. 
+		cout << "cells" << endl;
+		for (int q = 0; q < cellCount; q++)
 		{
-			cellVector[v].createVesicle(vesicleVector, vesicleCount);
+			cout << cellVector[q].prionCount << endl;
+		}
+		cout << "vesicles" << endl;
+		for (int q = 0; q < vesicleCount; q++)
+		{
+			cout << "x: " << vesicleVector[q].xCrd << ", y: " << vesicleVector[q].yCrd << ", z; " << vesicleVector[q].zCrd << endl;
 		}
 	}
 
