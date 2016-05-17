@@ -10,8 +10,7 @@ void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3
 void rungekutta(vector<Cell>& cellVector)
 {
 	int numCells = cellVector.size();
-	double mindist = 1;
-	int numCellsClose = 0;
+	double mindist = 2000;
 	/*bool** h;
 	h = new bool*[numCells]; // allocates 2d bool array
 	for (int i = 0; i < numCells; i++) {
@@ -30,7 +29,6 @@ void rungekutta(vector<Cell>& cellVector)
 			if (((cellVector.at(j).xCoord - cellVector.at(i).xCoord)*(cellVector.at(j).xCoord - cellVector.at(i).xCoord) + (cellVector.at(j).yCoord - cellVector.at(i).yCoord)*(cellVector.at(j).yCoord - cellVector.at(i).yCoord) + (cellVector.at(j).zCoord - cellVector.at(i).zCoord)*(cellVector.at(j).zCoord - cellVector.at(i).zCoord)) <= mindist*mindist) {
 				h[i][j] = true;
 				h[j][i] = true;
-				numCellsClose++;
 			}
 			else {
 				h[i][j] = false;
@@ -41,10 +39,10 @@ void rungekutta(vector<Cell>& cellVector)
 
 	double dt = 1; //timestep
 
-	double k1[4] = { 0 };
-	double k2[4] = { 0 };
-	double k3[4] = { 0 };
-	double k4[4] = { 0 };
+	double k1[4] = { 0,0,0,0 };
+	double k2[4] = { 0,0,0,0 };
+	double k3[4] = { 0,0,0,0 };
+	double k4[4] = { 0,0,0,0 };
 
 	f(cellVector, h, k1, k2, k3, k4, 1, numCells);
 	for (int i = 0; i < numCells; i++)
@@ -81,25 +79,25 @@ void rungekutta(vector<Cell>& cellVector)
 
 void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3, double* k4, int cycle, int numCells)
 {
-	long double constant = .00000000000000000000000005;
-	long double constant2 = .0000000000000000000000000005;
+	long double constant = .000000000000000000000000000000000000000000000005;
+	long double constant2 = .000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005;
 	for (int i = 0; i < numCells; i++) {
 		switch (cycle) {
 		case 1:
 			if (cellVector.at(i).prionCount > 0) {
-				k1[i] += -constant2*(cellVector.at(i).prionCount);
+				k1[i] -= constant2*(cellVector.at(i).prionCount);
 			}
 		case 2:
 			if (cellVector.at(i).prionCount > 0) {
-				k2[i] += -constant2*(cellVector.at(i).prionCount + .5*k1[i]);
+				k2[i] -= constant2*(cellVector.at(i).prionCount + .5*k1[i]);
 			}
 		case 3:
 			if (cellVector.at(i).prionCount > 0) {
-				k3[i] += -constant2*(cellVector.at(i).prionCount + .5*k2[i]);
+				k3[i] -= constant2*(cellVector.at(i).prionCount + .5*k2[i]);
 			}
 		case 4:
 			if (cellVector.at(i).prionCount > 0) {
-				k4[i] += -constant2*(cellVector.at(i).prionCount + k3[i]);
+				k4[i] -= constant2*(cellVector.at(i).prionCount + k3[i]);
 			}
 		}
 		for (int j = 0; j < numCells; j++) {
