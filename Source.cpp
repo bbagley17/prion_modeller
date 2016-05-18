@@ -42,7 +42,7 @@ void timeStep()
 	for (int n = 0; n < timeFrame; n++)
 	{
 		//Stuff that iterates Luke's ODEs, stuff the iterates vesicle creation and propagation
-		//rungekutta(cellVector);
+		rungekutta(cellVector);
 
 		//Small bit of code to model spread of prions within cell, and creation of vesicles, and checks for 
 		// vesicle-cell collisions
@@ -102,7 +102,14 @@ void timeStep()
 			{
 				cout << vesicleVector[q].xCrd << ", " << vesicleVector[q].yCrd << ", " << vesicleVector[q].zCrd << endl;
 			}
+
 			elapsed = 0;
+
+			for (int i = 0; i < cellCount; i++) 
+			{
+				cout << cellVector.at(i).prionCount << " ";
+				cout << cellVector.at(i).prionCount << endl;
+			}
 		}
 		else if (elapsed != outputStep)
 		{
@@ -110,7 +117,7 @@ void timeStep()
 		}
 
 	}
-	
+
 
 }
 void output()
@@ -171,7 +178,7 @@ void initializer()
 			woops = false;
 		}
 	}
-	
+
 	/*ifstream input;
 	input.open("new2.txt", ios::in);
 	string line;
