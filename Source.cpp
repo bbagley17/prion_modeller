@@ -13,7 +13,7 @@ void timeStep();
 void output();
 
 //Constant for spread rate of prions within cell
-double c1 = 0.05;
+double c1 = 0.005;
 int cellCount;
 vector<Cell> cellVector;
 int vesicleCount;
@@ -34,6 +34,10 @@ void timeStep()
 	cout << "Please enter the total simulation time: " << endl;
 	cin >> timeFrame;
 	cout << endl;
+
+	//Variables to be used for ticking off every 100 timesteps, after which the sim's state is output.
+	int outputStep = 100;
+	int elapsed = 0;
 
 	for (int n = 0; n < timeFrame; n++)
 	{
@@ -62,15 +66,15 @@ void timeStep()
 			bool close = false;
 			for (int z = 0; z < cellCount; z++)
 			{
-				if (1000 > abs(vesicleVector[q].xCrd - cellVector[z].xCoord))
+				if (2000 > abs(vesicleVector[q].xCrd - cellVector[z].xCoord))
 				{
 					close = true;
 				}
-				if (1000 > abs(vesicleVector[q].yCrd - cellVector[z].yCoord))
+				if (2000 > abs(vesicleVector[q].yCrd - cellVector[z].yCoord))
 				{
 					close = true;
 				}
-				if (1000 > abs(vesicleVector[q].zCrd - cellVector[z].xCoord))
+				if (2000 > abs(vesicleVector[q].zCrd - cellVector[z].xCoord))
 				{
 					close = true;
 				}
@@ -82,19 +86,31 @@ void timeStep()
 			}
 		}
 
-		//Outputting the values associated with each vesicle and cell, mainly for debugging purposes.
-		//May be commented out for actual runs, unless desired. 
-		cout << "cells" << endl;
-		for (int q = 0; q < cellCount; q++)
+		//This is the code mentioned above, which outputs the current state of the simulation every (outputStep) timesteps
+		if (elapsed == outputStep)
 		{
-			cout << cellVector[q].prionCount << endl;
+			cout << "t: " << n << endl;
+			//Outputting the values associated with each vesicle and cell, mainly for debugging purposes.
+			//May be commented out for actual runs, unless desired. 
+			cout << "cells" << endl;
+			for (int q = 0; q < cellCount; q++)
+			{
+				cout << cellVector[q].prionCount << endl;
+			}
+			cout << "vesicles (x,y,z)" << endl;
+			for (int q = 0; q < vesicleCount; q++)
+			{
+				cout << vesicleVector[q].xCrd << ", " << vesicleVector[q].yCrd << ", " << vesicleVector[q].zCrd << endl;
+			}
+			elapsed = 0;
 		}
-		cout << "vesicles" << endl;
-		for (int q = 0; q < vesicleCount; q++)
+		else if (elapsed != outputStep)
 		{
-			cout << "x: " << vesicleVector[q].xCrd << ", y: " << vesicleVector[q].yCrd << ", z; " << vesicleVector[q].zCrd << endl;
+			elapsed++;
 		}
+
 	}
+	
 
 }
 void output()
@@ -164,7 +180,6 @@ void initializer()
 	input >> cells;
 	for (int n = 0; n < cells; n++)
 	{
-		bool alive;
 		double inputPrionCount;
 		double x;
 		double y;
