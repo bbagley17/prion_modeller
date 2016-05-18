@@ -10,11 +10,10 @@ void Cell::checkCollision(vector<Vesicle>& vesicleVector, int& vesicleCount)
 	//Scans through entire vesicle vector to see if any vesicles have collided with the cell
 	for (int n = 0; n < vesicleVector.size(); n++)
 	{
-	//
-		//
-		//
-		//Change this to check if the vesicle is within a range of the cell's coordinates. As is, of course it doesn't work.
-		if ((vesicleVector[n].xCrd == xCoord) && (vesicleVector[n].yCrd == yCoord) && (vesicleVector[n].zCrd == zCoord))
+		//This tangled mob of math checks to see if the vesicle has wandered into a cell. It's literally just a pythagorean 
+		// formula checking for three-dimensional distance, and seeing if that distance falls within the cell. Not too bad, just looks
+		// nasty
+		if (500 >= sqrt((pow((abs(vesicleVector[n].xCrd - xCoord)), 2) + (pow((abs(vesicleVector[n].yCrd - yCoord)), 2)) + pow((abs(vesicleVector[n].zCrd - zCoord)), 2))))
 		{
 			prionCount += vesicleVector[n].prionCnt;
 			vesicleVector.erase(vesicleVector.begin() + n);
