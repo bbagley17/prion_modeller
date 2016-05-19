@@ -2,11 +2,14 @@
 #include <vector>
 #include "Cell.h"
 #include "Vesicle.h"
+#include <ctime>
 
 using namespace std;
 
 void Vesicle::randomWalk()
 {
+	//Initializing for random number generation
+	srand(time(NULL));
 	//Values for whether the vesicle will move in the positive or negative x,y,z directions, respetively
 	int xPlusMinus = 0;
 	int yPlusMinus = 0;
@@ -22,12 +25,12 @@ void Vesicle::randomWalk()
 	yPlusMinus = rand() % 3;
 	zPlusMinus = rand() % 3;
 
-	//Set the magnitude of the random step in each direction as some decimal between 0 and 1
-	xMagnitude = 10;//(rand() % 100) / 100;
-	yMagnitude = 10;//(rand() % 100) / 100;
-	zMagnitude = 10;//(rand() % 100) / 100;
+	//Set the magnitude of the random step in each direction as some number between 0 and 10
+	xMagnitude = (rand() % 10);
+	yMagnitude = (rand() % 10);
+	zMagnitude = (rand() % 10);
 
-	//Updating each coordinate as a random walk
+					//Updating each coordinate as a random walk
 	if (xPlusMinus = 0)
 		xCrd = xCrd - xMagnitude;
 	if (xPlusMinus = 1)
@@ -44,7 +47,7 @@ void Vesicle::randomWalk()
 	if (zPlusMinus = 1)
 		zCrd = xCrd + zMagnitude;
 
-	
 
-	
+
+
 }
