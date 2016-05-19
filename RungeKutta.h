@@ -5,7 +5,7 @@
 #include "Cell.h"
 #include "Vesicle.h"
 
-void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3, double* k4, int cycle, int numCells);
+void f(vector<Cell>&, vector<vector<bool>>&, vector<double>&, vector<double>&, vector<double>&, vector<double>&, int, int );
 
 void rungekutta(vector<Cell>& cellVector)
 {
@@ -18,44 +18,44 @@ void rungekutta(vector<Cell>& cellVector)
 	withinArray = new bool[numCells];
 	h[i] = withinArray;
 	for (int j = 0; j < numCells; j++)
-	h[i][j] = 0;
+	h.at(i).at(j) = 0;
 	}*/
-	bool h[7][7];
+	vector<vector<bool>> h(numCells, vector<bool>(numCells));
 
 
 
 	for (int i = 0; i < numCells; i++) {
-		for (int j = i + 1; j < numCells; j++) {
+		for (int j = 0; j < numCells; j++) { //faster would be to j = i+1, but reverted for security
 			if (((cellVector.at(j).xCoord - cellVector.at(i).xCoord)*(cellVector.at(j).xCoord - cellVector.at(i).xCoord) + (cellVector.at(j).yCoord - cellVector.at(i).yCoord)*(cellVector.at(j).yCoord - cellVector.at(i).yCoord) + (cellVector.at(j).zCoord - cellVector.at(i).zCoord)*(cellVector.at(j).zCoord - cellVector.at(i).zCoord)) <= (mindist*mindist)) {
-				h[i][j] = true;
-				h[j][i] = true;
+				h.at(i).at(j) = true;
+				//h.at(j).at(i) = true;
 			}
 			else {
-				h[i][j] = false;
-				h[j][i] = false;
+				h.at(i).at(j) = false;
+				//h.at(j).at(i) = false;
 			}
 		}
 	}
 
 	double dt = 1; //timestep
 
-	double k1[4] = { 0,0,0,0 };
-	double k2[4] = { 0,0,0,0 };
-	double k3[4] = { 0,0,0,0 };
-	double k4[4] = { 0,0,0,0 };
+	vector<double> k1(numCells, 0);
+	vector<double> k2(numCells, 0);
+	vector<double> k3(numCells, 0);
+	vector<double> k4(numCells, 0);
 
 	f(cellVector, h, k1, k2, k3, k4, 1, numCells);
 	for (int i = 0; i < numCells; i++)
-		k1[i] = k1[i] * dt;
+		k1.at(i) = k1.at(i) * dt;
 	f(cellVector, h, k1, k2, k3, k4, 2, numCells);
 	for (int i = 0; i < numCells; i++)
-		k2[i] = k2[i] * dt;
+		k1.at(i) = k1.at(i) * dt;
 	f(cellVector, h, k1, k2, k3, k4, 3, numCells);
 	for (int i = 0; i < numCells; i++)
-		k3[i] = k3[i] * dt;
+		k3.at(i) = k3.at(i) * dt;
 	f(cellVector, h, k1, k2, k3, k4, 4, numCells);
 	for (int i = 0; i < numCells; i++)
-		k4[i] = k4[i] * dt;
+		k4.at(i) = k4.at(i) * dt;
 
 	//
 	//
@@ -65,10 +65,10 @@ void rungekutta(vector<Cell>& cellVector)
 	//
 
 	for (int i = 0; i < numCells; i++) {
-		cout << cellVector.at(i).prionCount << " ";
-		double temp = cellVector.at(i).prionCount + (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6;
+		//cout << cellVector.at(i).prionCount << " ";
+		double temp = cellVector.at(i).prionCount + (k1.at(i) + 2 * k1.at(i) + 2 * k3.at(i) + k4.at(i)) / 6;
 		cellVector.at(i).prionCount = temp;
-		cout << cellVector.at(i).prionCount << endl;
+		//cout << cellVector.at(i).prionCount << endl;
 	}
 	//
 	//
@@ -77,7 +77,7 @@ void rungekutta(vector<Cell>& cellVector)
 
 
 
-void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3, double* k4, int cycle, int numCells)
+void f(vector<Cell>& cellVector, vector<vector<bool>>& h, vector<double>& k1, vector<double>& k2, vector<double>& k3, vector<double>& k4, int cycle, int numCells)
 {
 	long double constant = .000000000000000000000000000000000000000000000005;
 	long double constant2 = .000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005;
@@ -85,38 +85,38 @@ void f(vector<Cell>& cellVector, bool h[][7], double* k1, double* k2, double* k3
 		switch (cycle) {
 		case 1:
 			if (cellVector.at(i).prionCount > 0) {
-				k1[i] -= constant2*(cellVector.at(i).prionCount);
+				k1.at(i) -= constant2*(cellVector.at(i).prionCount);
 			}
 		case 2:
 			if (cellVector.at(i).prionCount > 0) {
-				k2[i] -= constant2*(cellVector.at(i).prionCount + .5*k1[i]);
+				k1.at(i) -= constant2*(cellVector.at(i).prionCount + .5*k1.at(i));
 			}
 		case 3:
 			if (cellVector.at(i).prionCount > 0) {
-				k3[i] -= constant2*(cellVector.at(i).prionCount + .5*k2[i]);
+				k3.at(i) -= constant2*(cellVector.at(i).prionCount + .5*k1.at(i));
 			}
 		case 4:
 			if (cellVector.at(i).prionCount > 0) {
-				k4[i] -= constant2*(cellVector.at(i).prionCount + k3[i]);
+				k4.at(i) -= constant2*(cellVector.at(i).prionCount + k3.at(i));
 			}
 		}
 		for (int j = 0; j < numCells; j++) {
 			switch (cycle) {
 			case 1:
-				if (h[i][j] && (i != j)) {
-					k1[i] += (constant*cellVector.at(j).prionCount - constant*cellVector.at(i).prionCount); //need to define what "constant" is
+				if (h.at(i).at(j) && (i != j)) {
+					k1.at(i) += (constant*cellVector.at(j).prionCount - constant*cellVector.at(i).prionCount); //need to define what "constant" is
 				}
 			case 2:
-				if (h[i][j] && (i != j)) {
-					k2[i] += (constant*(cellVector.at(j).prionCount + .5*k1[j]) - constant*(cellVector.at(i).prionCount + .5*k1[i]));
+				if (h.at(i).at(j) && (i != j)) {
+					k1.at(i) += (constant*(cellVector.at(j).prionCount + .5*k1.at(j)) - constant*(cellVector.at(i).prionCount + .5*k1.at(i)));
 				}
 			case 3:
-				if (h[i][j] && (i != j)) {
-					k3[i] += (constant*(cellVector.at(j).prionCount + .5*k2[j]) - constant*(cellVector.at(i).prionCount + .5*k2[i]));
+				if (h.at(i).at(j) && (i != j)) {
+					k3.at(i) += (constant*(cellVector.at(j).prionCount + .5*k2.at(j)) - constant*(cellVector.at(i).prionCount + .5*k1.at(i)));
 				}
 			case 4:
-				if (h[i][j] && (i != j)) {
-					k4[i] += (constant*(cellVector.at(j).prionCount + k3[j]) - constant*(cellVector.at(i).prionCount + k3[i]));
+				if (h.at(i).at(j) && (i != j)) {
+					k4.at(i) += (constant*(cellVector.at(j).prionCount + k3.at(j)) - constant*(cellVector.at(i).prionCount + k3.at(i)));
 				}
 			}
 		}
